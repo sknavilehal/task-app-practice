@@ -1,0 +1,109 @@
+name: Dependency Management
+
+on:
+  schedule:
+    # Run every Monday at 9 AM UTC
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
+
+jobs:
+  dependency-check:
+    name: Check for Dependency Updates
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Check backend dependencies
+        working-directory: ./backend
+        run: |
+          npm audit
+          npx npm-check-updates --format group
+
+      - name: Check frontend dependencies
+        working-directory: ./frontend
+        run: |
+          npm audit
+          npx npm-check-updates --format group
+
+  security-audit:
+    name: Security Audit
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Audit backend dependencies
+        working-directory: ./backend
+        run: |
+          npm audit --audit-level=high
+          npm audit fix --dry-run
+
+      - name: Audit frontend dependencies
+        working-directory: ./frontend
+        run: |
+          npm audit --audit-level=high
+          npm audit fix --dry-run
+
+      - name: Run Snyk security scan
+        uses: snyk/actions/node@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --all-projects --severity-threshold=high
+
+  create-update-pr:
+    name: Create Dependency Update PR
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Update backend dependencies
+        working-directory: ./backend
+        run: |
+          npm update
+          npm audit fix
+
+      - name: Update frontend dependencies
+        working-directory: ./frontend
+        run: |
+          npm update
+          npm audit fix
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: 'chore: update dependencies'
+          title: 'chore: automated dependency updates'
+          body: |
+            This PR contains automated dependency updates.
+            
+            Please review the changes and ensure all tests pass before merging.
+            
+            - Updated npm dependencies to latest compatible versions
+            - Applied security fixes where available
+          branch: chore/dependency-updates
+          delete-branch: true
