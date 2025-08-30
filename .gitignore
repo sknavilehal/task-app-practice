@@ -39,6 +39,7 @@ docker-compose.override.yml
 # Kubernetes
 kubeconfig
 *.kubeconfig
+secrets.env
 
 # Misc
 .DS_Store

@@ -1,10 +1,10 @@
-name: task-app
+version: '3.8'
+
 services:
   frontend:
-    image: frontend:latest
     build:
       context: ./frontend
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
     volumes:
       - ./frontend:/app
       - /app/node_modules
@@ -16,14 +16,16 @@ services:
       - backend
 
   backend:
-    image: backend:latest
     build:
       context: ./backend
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
     ports:
       - "3001:3001"
     environment:
-      - NODE_ENV=production
+      - NODE_ENV=development
       - DATABASE_URL=postgresql://postgres:postgres@db:5432/taskmanager
     depends_on:
       - db
@@ -38,16 +40,6 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-
-  nginx:
-    build:
-      context: ./nginx
-      dockerfile: Dockerfile
-    ports:
-      - "80:80"
-    depends_on:
-      - frontend
-      - backend
 
 volumes:
   postgres_data: 

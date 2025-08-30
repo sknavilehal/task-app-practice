@@ -1,0 +1,21 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - deployment.yaml
+  - service.yaml
+
+labels:
+  - includeSelectors: true
+    pairs:
+      app: task-manager-backend
+      tier: backend
+
+secretGenerator:
+  - name: task-manager-backend-secrets
+    envs:
+      - secrets.env
+
+configMapGenerator:
+  - name: task-manager-backend-config
+    literals:
+      - NODE_ENV=production
