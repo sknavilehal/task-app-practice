@@ -1,0 +1,37 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+metadata:
+  name: task-manager-app-base
+  namespace: task-manager
+
+# Include all component bases
+bases:
+  - backend/
+  - frontend/
+  - database/
+  - ingress/
+
+# Common metadata for all resources
+commonLabels:
+  app.kubernetes.io/name: task-manager
+  app.kubernetes.io/instance: task-manager-app
+  app.kubernetes.io/version: v1.0.0
+  app.kubernetes.io/component: application
+  app.kubernetes.io/part-of: task-management-system
+  app.kubernetes.io/managed-by: kustomize
+
+commonAnnotations:
+  app.kubernetes.io/created-by: kustomize
+  app.kubernetes.io/description: "Task Management Application"
+
+# Global naming
+namePrefix: tm-
+namespace: task-manager
+
+# Global images (can be overridden in overlays)
+images:
+- name: ghcr.io/your-username/task-app-practice-backend
+  newTag: latest
+- name: ghcr.io/your-username/task-app-practice-frontend
+  newTag: latest

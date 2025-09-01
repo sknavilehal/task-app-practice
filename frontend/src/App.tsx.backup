@@ -3,8 +3,19 @@ import './App.css';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost';
 
+interface Task {
+  id: number;
+  title: string;
+  description: string;
+  status: string;
+  priority: string;
+  userId: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
 function App() {
-  const [tasks, setTasks] = useState([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
   const [newTask, setNewTask] = useState({ title: '', description: '' });
   const [error, setError] = useState('');
 
@@ -38,7 +49,9 @@ function App() {
       setTasks([]);
       setError(`Failed to fetch tasks: ${error.message}`);
     }
-  };  const handleSubmit = async (e) => {
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       const response = await fetch(`${API_URL}/api/v1/demo-tasks`, {
@@ -48,10 +61,9 @@ function App() {
         },
         body: JSON.stringify(newTask),
       });
-      const data = await response.json();
       
       // For demo, add the task locally with a new ID
-      const newTaskWithId = {
+      const newTaskWithId: Task = {
         id: Date.now(), // Simple ID generation for demo
         title: newTask.title,
         description: newTask.description,
@@ -69,9 +81,9 @@ function App() {
     }
   };
 
-  const handleComplete = async (taskId) => {
+  const handleComplete = async (taskId: number) => {
     try {
-      const response = await fetch(`${API_URL}/api/v1/demo-tasks/${taskId}/complete`, {
+      await fetch(`${API_URL}/api/v1/demo-tasks/${taskId}/complete`, {
         method: 'PATCH',
       });
       
@@ -87,7 +99,7 @@ function App() {
     }
   };
 
-  const handleDelete = async (taskId) => {
+  const handleDelete = async (taskId: number) => {
     try {
       await fetch(`${API_URL}/api/v1/demo-tasks/${taskId}`, {
         method: 'DELETE',
@@ -105,7 +117,9 @@ function App() {
     <div className="App">
       <header className="App-header">
         <h1>Task Manager</h1>
+        <p>Manage your daily tasks efficiently</p>
       </header>
+
       <main>
         <section className="task-form">
           <h2>Add New Task</h2>
